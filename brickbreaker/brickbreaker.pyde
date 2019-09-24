@@ -1,19 +1,21 @@
 screenX, screenY = 1024, 1024
-validKeys = [65, 68, 37, 39]
 
 
 class Paddle():
     w, h = 128, 32
-    speed = 8
+    
     def __init__(self, x, y):
         self.x, self.y = x, y
     
     def move(self, dir):
-        if (collisions().get("paddle") != dir):
-            i = 0
-            while i < self.speed and "paddle" not in collisions():
-                i += 1
-                self.x += 1 if dir == "right" else -1
+        i = 0
+        while i < speed:
+            i += 1
+            self.x += 1 if dir == "right" else -1
+            if "paddle" in colliding:
+                if (colliding["paddle"] == dir):
+                    self.x -= 1 if dir == "right" else -1
+                    break
     
     def display(self):
         fill(0, 150, 255)
@@ -30,14 +32,14 @@ class Brick():
         self.x, self.y = x, y
 
 
-def collisions():
+def checkCollisions():
+    global colliding
     colliding = {}
     # paddle screen side collision
-    if (paddle.x == 0):
-        colliding["player"] = "left"
-    if (paddle.x + paddle.w == screenX):
-        colliding["player"] = "right"
-    return colliding
+    if (paddle.x <= 0):
+        colliding["paddle"] = "left"
+    elif (paddle.x + paddle.w >= screenX):
+        colliding["paddle"] = "right"
 
 
 def convertKey(n):
@@ -52,7 +54,10 @@ def setup():
     paddle = Paddle(screenX/2 - temp.w/2, screenY - screenY/30 - temp.h)
 
 def draw():
+    global speed
     background(255)
+    speed = int(frameRate/8)
+    checkCollisions()
     if "left" in keysPressed and "right" not in keysPressed:
         paddle.move("left")
     if "right" in keysPressed and "left" not in keysPressed:

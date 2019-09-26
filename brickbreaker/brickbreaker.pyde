@@ -33,17 +33,19 @@ class Ball():
         i = 0
         while i < speed:
             i += 1
+            checkCollisions()
             self.x += self.dir["x"]
             self.y += self.dir["y"]
-            print(self.x, self.y)
             if "ball" in colliding:
+                print("hit")
                 self.x -= self.dir["x"]
                 self.y -= self.dir["y"]
                 self.dir["x"] = 1 if colliding["ball"] == "left" else \
                     -1 if colliding["ball"] == "right" else self.dir["x"]
-                self.dir["y"] = 1 if colliding["ball"] == "bottom" else \
-                    -1 if colliding["ball"] == "top" else self.dir["y"]
-                break
+                self.dir["y"] = 1 if colliding["ball"] == "top" else \
+                    -1 if colliding["ball"] == "bottom" else self.dir["y"]
+                self.x += self.dir["x"]
+                self.y += self.dir["y"]
 
 
     def display(self):
@@ -58,7 +60,7 @@ class Brick():
         self.x, self.y = x, y
     
     def display(self):
-        fill(130, 70, 70)
+        fill(100, 40, 15)
         rect(self.x, self.y, self.w, self.h)
 
 
@@ -91,11 +93,21 @@ def checkCollisions():
         colliding["paddle"] = "left"
     elif (paddle.x + paddle.w == screenX):
         colliding["paddle"] = "right"
-    # ball screen Side collision
-    if (ball.x - ball.r <= 0):
+    # ball screen side collision
+    if (ball.x - ball.r == 0):
         colliding["ball"] = "left"
-    elif (ball.x + ball.r >= screenX):
+    elif (ball.x + ball.r == screenX):
         colliding["ball"] = "right"
+    if (ball.y - ball.r == 0):
+        colliding["ball"] = "top"
+    # ball paddle collision
+    temp = circleRectCollision(ball.x, ball.y, ball.r, paddle.x, paddle.y, paddle.w, paddle.h)
+    if temp is not None:
+        if (temp["y"] == "middle"):
+            colliding["paddle"] = temp["y"]
+        else:
+            colliding["paddle"] = temp["x"]
+    colliding["ball"] = 
 
 
 def convertKey(n):
@@ -107,6 +119,9 @@ def setup():
     size(screenX, screenY)
     keysPressed = []
     bricks = []
+    for x in range(16):
+        for y in range(5):
+            bricks.append(Brick(x*64, 64 + y*32))
     temp = Paddle(0, 0)
     paddle = Paddle(screenX/2 - temp.w/2, screenY - screenY/30 - temp.h)
     temp = Ball(0, 0)
@@ -115,10 +130,9 @@ def setup():
 def draw():
     global speed
     # Initialization
-    background(255)
+    background(200)
     speed = int(frameRate/8)
     # Movement
-    checkCollisions()
     ball.move()
     if "left" in keysPressed and "right" not in keysPressed:
         paddle.move("left")

@@ -23,8 +23,8 @@ class Paddle():
 
 
 class Ball():
-    r = 10
-    dir = {"x": 0, "y": 0}
+    r = 20
+    dir = {"x": 1, "y": -1}
     
     def __init__(self, x, y):
         self.x, self.y = x, y
@@ -33,16 +33,22 @@ class Ball():
         i = 0
         while i < speed:
             i += 1
-            self.x += dir["x"]
-            self.y += dir["y"]
+            self.x += self.dir["x"]
+            self.y += self.dir["y"]
+            print(self.x, self.y)
             if "ball" in colliding:
-                self.x -= dir["x"]
-                self.y -= dir["y"]
-                
-    
+                self.x -= self.dir["x"]
+                self.y -= self.dir["y"]
+                self.dir["x"] = 1 if colliding["ball"] == "left" else \
+                    -1 if colliding["ball"] == "right" else self.dir["x"]
+                self.dir["y"] = 1 if colliding["ball"] == "bottom" else \
+                    -1 if colliding["ball"] == "top" else self.dir["y"]
+                break
+
+
     def display(self):
         fill(255, 0, 0)
-        circle(self.x, self.y, self.r)
+        circle(self.x, self.y, self.r*2)
 
 
 class Brick():
@@ -83,8 +89,13 @@ def checkCollisions():
     # paddle screen side collision
     if (paddle.x <= 0):
         colliding["paddle"] = "left"
-    elif (paddle.x + paddle.w >= screenX):
+    elif (paddle.x + paddle.w == screenX):
         colliding["paddle"] = "right"
+    # ball screen Side collision
+    if (ball.x - ball.r <= 0):
+        colliding["ball"] = "left"
+    elif (ball.x + ball.r >= screenX):
+        colliding["ball"] = "right"
 
 
 def convertKey(n):
@@ -108,6 +119,7 @@ def draw():
     speed = int(frameRate/8)
     # Movement
     checkCollisions()
+    ball.move()
     if "left" in keysPressed and "right" not in keysPressed:
         paddle.move("left")
     if "right" in keysPressed and "left" not in keysPressed:

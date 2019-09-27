@@ -11,6 +11,7 @@ class Paddle():
         i = 0
         while i < speed:
             i += 1
+            checkCollisions()
             self.x += 1 if dir == "right" else -1
             if "paddle" in colliding:
                 if (colliding["paddle"] == dir):
@@ -37,7 +38,6 @@ class Ball():
             self.x += self.dir["x"]
             self.y += self.dir["y"]
             if "ball" in colliding:
-                print("hit")
                 self.x -= self.dir["x"]
                 self.y -= self.dir["y"]
                 self.dir["x"] = 1 if colliding["ball"] == "left" else \
@@ -80,7 +80,7 @@ def circleRectCollision(cx, cy, cr, rx, ry, rw, rh):
         edge["value"]["y"] = ry+rh
         edge["side"]["y"] = "bottom"
     distance = {"x": cx-edge["value"]["x"], "y": cy-edge["value"]["y"]}
-    if (sqrt(distance["x"]**2 + distance["y"]**2)):
+    if (sqrt(distance["x"]**2 + distance["y"]**2) <= cr):
         return edge["side"]
     return None
 
@@ -103,11 +103,13 @@ def checkCollisions():
     # ball paddle collision
     temp = circleRectCollision(ball.x, ball.y, ball.r, paddle.x, paddle.y, paddle.w, paddle.h)
     if temp is not None:
-        if (temp["y"] == "middle"):
+        if (temp["y"] != "middle"):
             colliding["paddle"] = temp["y"]
+            colliding["ball"] = "bottom" if temp["y"] == "top" else "top"
         else:
             colliding["paddle"] = temp["x"]
-    colliding["ball"] = 
+            colliding["ball"] = "left" if temp["x"] == "right" else "right"
+            
 
 
 def convertKey(n):
@@ -131,7 +133,7 @@ def draw():
     global speed
     # Initialization
     background(200)
-    speed = int(frameRate/8)
+    speed = int(frameRate/16)
     # Movement
     ball.move()
     if "left" in keysPressed and "right" not in keysPressed:

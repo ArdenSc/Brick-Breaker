@@ -3,21 +3,21 @@ screenX, screenY = 1024, 1024
 
 class Paddle():
     w, h = 128, 32
-    
+
     def __init__(self, x, y):
         self.x, self.y = x, y
-    
+
     def move(self, dir):
         i = 0
         while i < speed:
             i += 1
             checkCollisions()
             self.x += 1 if dir == "right" else -1
-            if "paddle" in colliding:
-                if (colliding["paddle"] == dir):
+            if "paddle" in colliding and "x" in colliding["paddle"]:
+                if (colliding["paddle"]["x"] == dir):
                     self.x -= 1 if dir == "right" else -1
                     break
-    
+
     def display(self):
         fill(0, 150, 255)
         rect(self.x, self.y, self.w, self.h)
@@ -26,10 +26,11 @@ class Paddle():
 class Ball():
     r = 20
     dir = {"x": 1, "y": -1}
-    
+    color = {"r": 255, "g": 0, "b": 0}
+
     def __init__(self, x, y):
         self.x, self.y = x, y
-    
+
     def move(self):
         i = 0
         while i < speed:
@@ -40,27 +41,29 @@ class Ball():
             if "ball" in colliding:
                 self.x -= self.dir["x"]
                 self.y -= self.dir["y"]
-                self.dir["x"] = 1 if colliding["ball"] == "left" else \
-                    -1 if colliding["ball"] == "right" else self.dir["x"]
-                self.dir["y"] = 1 if colliding["ball"] == "top" else \
-                    -1 if colliding["ball"] == "bottom" else self.dir["y"]
+                if "x" in colliding["ball"]:
+                    self.dir["x"] = 1 if colliding["ball"]["x"] == "left" else \
+                        -1 if colliding["ball"]["x"] == "right" else self.dir["x"]
+                if "y" in colliding["ball"]:
+                    self.dir["y"] = 1 if colliding["ball"]["y"] == "top" else \
+                        -1 if colliding["ball"]["y"] == "bottom" else self.dir["y"]
                 self.x += self.dir["x"]
                 self.y += self.dir["y"]
 
-
     def display(self):
-        fill(255, 0, 0)
+        fill(self.color["r"], self.color["g"], self.color["b"])
         circle(self.x, self.y, self.r*2)
 
 
 class Brick():
     w, h = 64, 32
-    
-    def __init__(self, x, y):
+
+    def __init__(self, x, y, color):
         self.x, self.y = x, y
-    
+        self.color = color
+
     def display(self):
-        fill(100, 40, 15)
+        fill(self.color["r"], self.color["g"], self.color["b"])
         rect(self.x, self.y, self.w, self.h)
 
 
@@ -90,31 +93,65 @@ def checkCollisions():
     colliding = {}
     # paddle screen side collision
     if (paddle.x <= 0):
-        colliding["paddle"] = "left"
+        if "paddle" not in colliding:
+            colliding["paddle"] = {}
+        colliding["paddle"]["x"] = "left"
     elif (paddle.x + paddle.w == screenX):
-        colliding["paddle"] = "right"
+        if "paddle" not in colliding:
+            colliding["paddle"] = {}
+        colliding["paddle"]["x"] = "right"
     # ball screen side collision
     if (ball.x - ball.r == 0):
-        colliding["ball"] = "left"
+        if "ball" not in colliding:
+            colliding["ball"] = {}
+        colliding["ball"]["x"] = "left"
     elif (ball.x + ball.r == screenX):
-        colliding["ball"] = "right"
+        if "ball" not in colliding:
+            colliding["ball"] = {}
+        colliding["ball"]["x"] = "right"
     if (ball.y - ball.r == 0):
-        colliding["ball"] = "top"
+        if "ball" not in colliding:
+            colliding["ball"] = {}
+        colliding["ball"]["y"] = "top"
     # ball paddle collision
     temp = circleRectCollision(ball.x, ball.y, ball.r, paddle.x, paddle.y, paddle.w, paddle.h)
     if temp is not None:
         if (temp["y"] != "middle"):
-            colliding["paddle"] = temp["y"]
-            colliding["ball"] = "bottom" if temp["y"] == "top" else "top"
+            if "paddle" not in colliding:
+                colliding["paddle"] = {}
+            if "ball" not in colliding:
+                colliding["ball"] = {}
+            colliding["paddle"]["y"] = temp["y"]
+            colliding["ball"]["y"] = "bottom" if temp["y"] == "top" else "top"
         else:
-            colliding["paddle"] = temp["x"]
-            colliding["ball"] = "left" if temp["x"] == "right" else "right"
-            
+            if "paddle" not in colliding:
+                colliding["paddle"] = {}
+            if "ball" not in colliding:
+                colliding["ball"] = {}
+            colliding["paddle"]["x"] = temp["x"]
+            colliding["ball"]["x"] = "left" if temp["x"] == "right" else "right"
+    # ball brick collision
+    i = 0
+    while (i < len(bricks)):
+        temp = circleRectCollision(ball.x, ball.y, ball.r, bricks[i].x, bricks[i].y, bricks[i].w, bricks[i].h)
+        if temp is not None:
+            if (temp["y"] != "middle"):
+                if "ball" not in colliding:
+                    colliding["ball"] = {}
+                colliding["ball"]["y"] = "bottom" if temp["y"] == "top" else "top"
+            else:
+                if "ball" not in colliding:
+                    colliding["ball"] = {}
+                colliding["ball"]["x"] = "left" if temp["x"] == "right" else "right"
+            ball.color = bricks[i].color
+            del bricks[i]
+        i += 1
 
 
 def convertKey(n):
     return "left" if n == 65 or n == 37 else \
         "right" if n == 68 or n == 39 else None
+
 
 def setup():
     global paddle, bricks, ball, keysPressed
@@ -123,17 +160,19 @@ def setup():
     bricks = []
     for x in range(16):
         for y in range(5):
-            bricks.append(Brick(x*64, 64 + y*32))
+            bricks.append(Brick(x*64, 64 + y*32, {"r": random(255), "g": random(255), "b": random(255)}))
+    print(len(bricks))
     temp = Paddle(0, 0)
     paddle = Paddle(screenX/2 - temp.w/2, screenY - screenY/30 - temp.h)
     temp = Ball(0, 0)
     ball = Ball(paddle.x + paddle.w/2, paddle.y - temp.r)
 
+
 def draw():
     global speed
     # Initialization
     background(200)
-    speed = int(frameRate/16)
+    speed = int(frameRate/8)
     # Movement
     ball.move()
     if "left" in keysPressed and "right" not in keysPressed:
@@ -155,4 +194,3 @@ def keyPressed():
 def keyReleased():
     if convertKey(keyCode) is not None:
         keysPressed.remove(convertKey(keyCode))
-    

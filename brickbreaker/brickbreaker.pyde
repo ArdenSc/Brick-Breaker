@@ -1,4 +1,5 @@
 screenX, screenY = 1024, 1024
+speed = 8
 
 
 class Paddle():
@@ -156,12 +157,13 @@ def convertKey(n):
 def setup():
     global paddle, bricks, ball, keysPressed
     size(screenX, screenY)
+    frameRate(60)
     keysPressed = []
     bricks = []
     for x in range(16):
-        for y in range(5):
-            bricks.append(Brick(x*64, 64 + y*32, {"r": random(255), "g": random(255), "b": random(255)}))
-    print(len(bricks))
+        for y in range(6):
+            y *= 2
+            bricks.append(Brick(x*64, 32 + y*32, {"r": random(255), "g": random(255), "b": random(255)}))
     temp = Paddle(0, 0)
     paddle = Paddle(screenX/2 - temp.w/2, screenY - screenY/30 - temp.h)
     temp = Ball(0, 0)
@@ -169,10 +171,8 @@ def setup():
 
 
 def draw():
-    global speed
     # Initialization
     background(200)
-    speed = int(frameRate/8)
     # Movement
     ball.move()
     if "left" in keysPressed and "right" not in keysPressed:

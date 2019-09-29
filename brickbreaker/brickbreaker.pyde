@@ -12,12 +12,11 @@ class Paddle():
         i = 0
         while i < speed:
             i += 1
-            checkCollisions()
             self.x += 1 if dir == "right" else -1
+            checkCollisions()
             if "paddle" in colliding and "x" in colliding["paddle"]:
                 if (colliding["paddle"]["x"] == dir):
                     self.x -= 1 if dir == "right" else -1
-                    break
 
     def display(self):
         fill(0, 150, 255)
@@ -36,20 +35,20 @@ class Ball():
         i = 0
         while i < speed:
             i += 1
-            checkCollisions()
             self.x += self.dir["x"]
             self.y += self.dir["y"]
+            checkCollisions()
             if "ball" in colliding:
                 self.x -= self.dir["x"]
                 self.y -= self.dir["y"]
                 if "x" in colliding["ball"]:
-                    self.dir["x"] = 1 if colliding["ball"]["x"] == "left" else \
-                        -1 if colliding["ball"]["x"] == "right" else self.dir["x"]
+                    for collision in colliding["ball"]["x"]:
+                        self.dir["x"] = 1 if collision == "left" else \
+                            -1 if collision == "right" else self.dir["x"]
                 if "y" in colliding["ball"]:
-                    self.dir["y"] = 1 if colliding["ball"]["y"] == "top" else \
-                        -1 if colliding["ball"]["y"] == "bottom" else self.dir["y"]
-                self.x += self.dir["x"]
-                self.y += self.dir["y"]
+                    for collision in colliding["ball"]["y"]:
+                        self.dir["y"] = 1 if collision == "top" else \
+                            -1 if collision == "bottom" else self.dir["y"]
 
     def display(self):
         fill(self.color["r"], self.color["g"], self.color["b"])
@@ -105,45 +104,59 @@ def checkCollisions():
     if (ball.x - ball.r == 0):
         if "ball" not in colliding:
             colliding["ball"] = {}
-        colliding["ball"]["x"] = "left"
+        if "x" not in colliding:
+            colliding["ball"]["x"] = []
+        colliding["ball"]["x"].append("left")
     elif (ball.x + ball.r == screenX):
         if "ball" not in colliding:
             colliding["ball"] = {}
-        colliding["ball"]["x"] = "right"
+        if "x" not in colliding:
+            colliding["ball"]["x"] = []
+        colliding["ball"]["x"].append("right")
     if (ball.y - ball.r == 0):
         if "ball" not in colliding:
             colliding["ball"] = {}
-        colliding["ball"]["y"] = "top"
+        if "x" not in colliding:
+            colliding["ball"]["y"] = []
+        colliding["ball"]["y"].append("top")
     # ball paddle collision
     temp = circleRectCollision(ball.x, ball.y, ball.r, paddle.x, paddle.y, paddle.w, paddle.h)
     if temp is not None:
+        if (temp["x"] != "middle"):
+            if "paddle" not in colliding:
+                colliding["paddle"] = {}
+            if "ball" not in colliding:
+                colliding["ball"] = {}
+            if "x" not in colliding["ball"]:
+                colliding["ball"]["x"] = []
+            colliding["paddle"]["x"] = temp["x"]
+            colliding["ball"]["x"].append("left" if temp["x"] == "right" else "right")
         if (temp["y"] != "middle"):
             if "paddle" not in colliding:
                 colliding["paddle"] = {}
             if "ball" not in colliding:
                 colliding["ball"] = {}
+            if "y" not in colliding["ball"]:
+                colliding["ball"]["y"] = []
             colliding["paddle"]["y"] = temp["y"]
-            colliding["ball"]["y"] = "bottom" if temp["y"] == "top" else "top"
-        else:
-            if "paddle" not in colliding:
-                colliding["paddle"] = {}
-            if "ball" not in colliding:
-                colliding["ball"] = {}
-            colliding["paddle"]["x"] = temp["x"]
-            colliding["ball"]["x"] = "left" if temp["x"] == "right" else "right"
+            colliding["ball"]["y"].append("bottom" if temp["y"] == "top" else "top")
     # ball brick collision
     i = 0
     while (i < len(bricks)):
         temp = circleRectCollision(ball.x, ball.y, ball.r, bricks[i].x, bricks[i].y, bricks[i].w, bricks[i].h)
         if temp is not None:
+            if (temp["x"] != "middle"):
+                if "ball" not in colliding:
+                    colliding["ball"] = {}
+                if "x" not in colliding["ball"]:
+                    colliding["ball"]["x"] = []
+                colliding["ball"]["x"].append("left" if temp["x"] == "right" else "right")
             if (temp["y"] != "middle"):
                 if "ball" not in colliding:
                     colliding["ball"] = {}
-                colliding["ball"]["y"] = "bottom" if temp["y"] == "top" else "top"
-            else:
-                if "ball" not in colliding:
-                    colliding["ball"] = {}
-                colliding["ball"]["x"] = "left" if temp["x"] == "right" else "right"
+                if "y" not in colliding["ball"]:
+                    colliding["ball"]["y"] = []
+                colliding["ball"]["y"].append("bottom" if temp["y"] == "top" else "top")
             ball.color = bricks[i].color
             del bricks[i]
         i += 1

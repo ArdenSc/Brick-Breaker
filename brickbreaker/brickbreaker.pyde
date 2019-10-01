@@ -67,6 +67,13 @@ class Brick():
         rect(self.x, self.y, self.w, self.h)
 
 
+def guiDisplay():
+    textFont(impact)
+    textAlign(CENTER, CENTER)
+    fill(255)
+    text(str(int(float(totalBricks - len(bricks)) / totalBricks * 100)) + "%", screenX/2, screenY/2)
+
+
 def circleRectCollision(cx, cy, cr, rx, ry, rw, rh):
     edge = {"value": {"x": cx, "y": cy},
             "side": {"x": "middle", "y": "middle"}}
@@ -168,15 +175,18 @@ def convertKey(n):
 
 
 def setup():
-    global paddle, bricks, ball, keysPressed
+    global paddle, bricks, totalBricks, ball, keysPressed, impact
     size(screenX, screenY)
     frameRate(60)
     keysPressed = []
     bricks = []
-    for x in range(16):
-        for y in range(6):
-            y *= 2
-            bricks.append(Brick(x*64, 32 + y*32, {"r": random(255), "g": random(255), "b": random(255)}))
+    impact = createFont("Impact", 48)
+    for x in range(8):
+        for y in range(12):
+            if (random(1) >= 0.5):
+                bricks.append(Brick(screenX/2 + x*64, 32 + y*32, {"r": random(51)*5, "g": random(51)*5, "b": random(51)*5}))
+                bricks.append(Brick(screenX/2 - screenX/16 - x*64, 32 + y*32, {"r": random(51)*5, "g": random(51)*5, "b": random(51)*5}))
+    totalBricks = len(bricks)
     temp = Paddle(0, 0)
     paddle = Paddle(screenX/2 - temp.w/2, screenY - screenY/30 - temp.h)
     temp = Ball(0, 0)
@@ -193,6 +203,7 @@ def draw():
     if "right" in keysPressed and "left" not in keysPressed:
         paddle.move("right")
     # Display
+    guiDisplay()
     paddle.display()
     ball.display()
     for brick in bricks:

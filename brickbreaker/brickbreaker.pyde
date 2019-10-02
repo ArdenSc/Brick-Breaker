@@ -3,10 +3,12 @@ speed = 8
 
 
 class Paddle():
-    w, h = 128, 32
+    w = 128
+    h = 32
 
     def __init__(self, x, y):
-        self.x, self.y = x, y
+        self.x = x
+        self.y = y
 
     def move(self, dir):
         i = 0
@@ -29,7 +31,8 @@ class Ball():
     color = {"r": 255, "g": 0, "b": 0}
 
     def __init__(self, x, y):
-        self.x, self.y = x, y
+        self.x = x
+        self.y = y
 
     def move(self):
         i = 0
@@ -56,10 +59,12 @@ class Ball():
 
 
 class Brick():
-    w, h = 64, 32
+    w = 64
+    h = 32
 
     def __init__(self, x, y, color):
-        self.x, self.y = x, y
+        self.x = x
+        self.y = y
         self.color = color
 
     def display(self):

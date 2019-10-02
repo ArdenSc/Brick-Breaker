@@ -126,6 +126,15 @@ def checkCollisions():
         if "x" not in colliding:
             colliding["ball"]["y"] = []
         colliding["ball"]["y"].append("top")
+    # save some framerate by checking if we need brick/paddle collisions
+    closeToCollision = False
+    for brick in bricks:
+        if (abs(ball.x - brick.x) + abs(ball.y - brick.y) < ball.r + brick.w + brick.h):
+            closeToCollision = True
+    if (abs(ball.x - paddle.x) + abs(ball.y - paddle.y) < ball.r + paddle.w + paddle.h):
+        closeToCollision = True
+    if not closeToCollision:
+        return
     # ball paddle collision
     temp = circleRectCollision(ball.x, ball.y, ball.r, paddle.x, paddle.y, paddle.w, paddle.h)
     if temp is not None:
@@ -174,12 +183,31 @@ def convertKey(n):
         "right" if n == 68 or n == 39 else None
 
 
+def reset():
+    global paddle, bricks, totalBricks, ball, keysPressed, impact, gamestate
+    keysPressed = []
+    bricks = []
+    gamestate = 0
+    impact = createFont("Impact", 48)
+    for x in range(8):
+        for y in range(12):
+            if (random(1) >= 0.5):
+                bricks.append(Brick(screenX/2 + x*64, 32 + y*32, {"r": random(51)*5, "g": random(51)*5, "b": random(51)*5}))
+                bricks.append(Brick(screenX/2 - screenX/16 - x*64, 32 + y*32, {"r": random(51)*5, "g": random(51)*5, "b": random(51)*5}))
+    totalBricks = len(bricks)
+    temp = Paddle(0, 0)
+    paddle = Paddle(screenX/2 - temp.w/2, screenY - screenY/30 - temp.h)
+    temp = Ball(0, 0)
+    ball = Ball(paddle.x + paddle.w/2, paddle.y - temp.r)
+
+
 def setup():
-    global paddle, bricks, totalBricks, ball, keysPressed, impact
+    global paddle, bricks, totalBricks, ball, keysPressed, impact, gamestate
     size(screenX, screenY)
     frameRate(60)
     keysPressed = []
     bricks = []
+    gamestate = 0
     impact = createFont("Impact", 48)
     for x in range(8):
         for y in range(12):
@@ -197,11 +225,14 @@ def draw():
     # Initialization
     background(200)
     # Movement
-    ball.move()
-    if "left" in keysPressed and "right" not in keysPressed:
-        paddle.move("left")
-    if "right" in keysPressed and "left" not in keysPressed:
-        paddle.move("right")
+    if gamestate == 1:
+        if "left" in keysPressed and "right" not in keysPressed:
+            paddle.move("left")
+        if "right" in keysPressed and "left" not in keysPressed:
+            paddle.move("right")
+        ball.move()
+        if (len(bricks) == 0 or ball.y >= screenY + ball.r):
+            reset()
     # Display
     guiDisplay()
     paddle.display()
@@ -211,10 +242,12 @@ def draw():
 
 
 def keyPressed():
+    global gamestate
     if convertKey(keyCode) is not None and convertKey(keyCode) not in keysPressed:
         keysPressed.append(convertKey(keyCode))
+        gamestate = 1
 
 
 def keyReleased():
-    if convertKey(keyCode) is not None:
+    if convertKey(keyCode) is not None and convertKey(keyCode) in keysPressed:
         keysPressed.remove(convertKey(keyCode))

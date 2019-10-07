@@ -193,7 +193,6 @@ def reset():
     keysPressed = []
     bricks = []
     gamestate = 0
-    impact = createFont("Impact", 48)
     for x in range(8):
         for y in range(12):
             if (random(1) >= 0.5):
@@ -207,23 +206,11 @@ def reset():
 
 
 def setup():
-    global paddle, bricks, totalBricks, ball, keysPressed, impact, gamestate
+    global impact
     size(screenX, screenY)
     frameRate(60)
-    keysPressed = []
-    bricks = []
-    gamestate = 0
     impact = createFont("Impact", 48)
-    for x in range(8):
-        for y in range(12):
-            if (random(1) >= 0.5):
-                bricks.append(Brick(screenX/2 + x*64, 32 + y*32, {"r": random(51)*5, "g": random(51)*5, "b": random(51)*5}))
-                bricks.append(Brick(screenX/2 - screenX/16 - x*64, 32 + y*32, {"r": random(51)*5, "g": random(51)*5, "b": random(51)*5}))
-    totalBricks = len(bricks)
-    temp = Paddle(0, 0)
-    paddle = Paddle(screenX/2 - temp.w/2, screenY - screenY/30 - temp.h)
-    temp = Ball(0, 0)
-    ball = Ball(paddle.x + paddle.w/2, paddle.y - temp.r)
+    reset()
 
 
 def draw():

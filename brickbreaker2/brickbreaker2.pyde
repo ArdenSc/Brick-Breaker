@@ -16,9 +16,10 @@ class Paddle():
             i += 1
             self.x += 1 if dir == "right" else -1
             checkCollisions()
-            if "paddle" in colliding and "x" in colliding["paddle"]:
-                if (colliding["paddle"]["x"] == dir):
-                    self.x -= 1 if dir == "right" else -1
+            if "paddle" in colliding:
+                for collision in colliding["paddle"]:
+                    if (collision == dir):
+                        self.x -= 1 if dir == "right" else -1
 
     def display(self):
         fill(0, 150, 255)
@@ -103,11 +104,11 @@ def checkCollisions():
     global colliding
     colliding = {}
     # paddle screen side collision
-    if (paddle.x <= 0):
+    if (paddle.x < 0):
         if "paddle" not in colliding:
             colliding["paddle"] = []
         colliding["paddle"].append("left")
-    elif (paddle.x + paddle.w == screenX):
+    elif (paddle.x + paddle.w >= screenX):
         if "paddle" not in colliding:
             colliding["paddle"] = []
         colliding["paddle"].append("right")

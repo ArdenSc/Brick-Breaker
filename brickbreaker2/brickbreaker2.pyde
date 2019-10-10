@@ -28,7 +28,7 @@ class Paddle():
 
 class Ball():
     r = 20
-    angle = 45
+    angle = random(30, 46) if random(1) == 1 else random(315, 331)
     color = {"r": 255, "g": 0, "b": 0}
 
     def __init__(self, x, y):
@@ -46,10 +46,10 @@ class Ball():
                 self.x -= 0.5*cos(radians(self.angle - 90))
                 self.y -= 0.5*sin(radians(self.angle - 90))
                 for collision in colliding["ball"]:
-                    self.angle = 2*collision-self.angle
-                    if (self.angle < 0):
+                    self.angle = 2*collision-self.angle+random(10)-5
+                    while (self.angle < 0):
                         self.angle += 360
-                    if (self.angle >= 360):
+                    while (self.angle >= 360):
                         self.angle -= 360
 
 
@@ -152,16 +152,22 @@ def checkCollisions():
             if "ball" not in colliding:
                 colliding["ball"] = []
             if (temp["x"] != "middle" and temp["y"] != "middle"):
-                colliding["ball"].append(45 if ((temp["x"] == "left" and temp["y"] == "top") or 
-                                            (temp["x"] == "right" and temp["y"] == "bottom")) else 135)
+                planeAngle = 45 if ((temp["x"] == "left" and temp["y"] == "top") or \
+                                    (temp["x"] == "right" and temp["y"] == "bottom")) else 135
+                colliding["ball"].append(planeAngle)
+                if (ball.angle != planeAngle and ball.angle != planeAngle + 180):
+                    del bricks[i]
             elif (temp["x"] == "middle"):
                 colliding["ball"].append(90)
+                del bricks[i]
             elif (temp["y"] == "middle"):
                 colliding["ball"].append(0)
+                del bricks[i]
             else:
                 print("Ball is inside an object, terminating")
+                print("Ball X: " + str(ball.x) + " Y: " + str(ball.y) + " Heading: " + str(ball.angle) + "°")
+                print("Brick X: " + str(bricks[i].x) + " Brick Y: " + str(bricks[i].y))
                 exit()
-            del bricks[i]
         i += 1
 
 
